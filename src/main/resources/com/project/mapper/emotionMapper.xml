@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.mapper.emotionMapper">
+    <select id="list" resultType="com.project.vo.emotion_report">
+        select reportId,
+               warningType,
+               suggestion,
+               recordTime,
+               emotionData,
+               employeeId,
+               employeeName,
+               employeePhoneNumber
+               from report_emp
+        <where>
+            <if test="recordTime!=null">
+                 recordTime LIKE CONCAT(#{recordTime},'%')
+            </if>
+
+            <if test="employeeId!=null">
+                and employeeId=#{employeeId}
+            </if>
+
+            <if test="warningType!=null">
+                and warningType=#{warningType}
+            </if>
+        </where>
+    </select>
+</mapper>

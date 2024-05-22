@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="f3f57d9b-89f0-4288-a094-8967ff86e2ca" name="47.120.44.17">
+        <fileTransfer rootFolder="/www/emotion_master" accessType="SFTP" host="47.120.44.17" port="22" sshConfigId="3eba3b0a-3fc7-4ce9-806f-1b539b2e2374" sshConfig="root@47.120.44.17:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

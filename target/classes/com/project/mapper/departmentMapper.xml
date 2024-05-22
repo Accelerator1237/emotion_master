@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.mapper.departmentMapper">
+
+
+    <select id="department_list" resultType="com.project.vo.info_department">
+<!--        select-->
+<!--            deptName,-->
+<!--            employeePhoneNumber,-->
+<!--            employeeName,-->
+<!--            deptNo-->
+<!--            from (  select deptName,-->
+<!--                deptManagerId,-->
+<!--                deptNo-->
+<!--                from department-->
+<!--            )a left join (-->
+<!--            select employeeName,-->
+<!--                employeePhoneNumber,-->
+<!--                employeeId-->
+<!--        from employeebasic-->
+<!--        )b on a.deptManagerId=b.employeeId-->
+
+        SELECT d.deptName, eb.employeePhoneNumber, eb.employeeName, d.deptNo, peopleNum
+        FROM department d
+        LEFT JOIN (
+        SELECT employeeDepartmentNo, COUNT(eb.employeeId) AS peopleNum
+        FROM employeejobinfo ef
+        LEFT JOIN employeebasic eb ON ef.employeeId = eb.employeeId
+        GROUP BY employeeDepartmentNo
+        ) AS dept_employee_count ON d.deptNo = dept_employee_count.employeeDepartmentNo
+        LEFT JOIN employeejobinfo ef ON d.deptNo = ef.employeeDepartmentNo
+        LEFT JOIN employeebasic eb ON ef.employeeId = eb.employeeId
+        <where>
+            <if test="departmentName!=null">
+                deptName=#{departmentName}
+            </if>
+
+            <if test="phoneNumber!=null">
+                and employeePhoneNumber=#{phoneNumber}
+            </if>
+
+            <if test="manager!=null">
+                and employeeName=#{manager}
+            </if>
+        </where>
+
+    </select>
+
+<!--    <select id="count">-->
+<!--        SELECT COUNT(ej.employeeId)-->
+<!--        FROM department d-->
+<!--                 INNER JOIN employeejobinfo ej ON d.deptNo = ej.employeeDepartmentNo-->
+<!--        WHERE d.deptName = #{departmentName}-->
+<!--        GROUP BY d.deptName;-->
+<!--    </select>-->
+
+</mapper>
