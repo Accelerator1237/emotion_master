@@ -11,5 +11,9 @@ spring:
     multipart:
       max-file-size: 20MB
       max-request-size: 20MB
+alibaba:
+  cloud:
+    accessKeyId: ${ALIBABA_CLOUD_ACCESS_KEY_ID}
+    accessKeySecret: ${ALIBABA_CLOUD_ACCESS_KEY_SECRET}
 
 
