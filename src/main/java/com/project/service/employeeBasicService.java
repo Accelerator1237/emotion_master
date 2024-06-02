@@ -3,7 +3,6 @@ package com.project.service;
 import com.project.pojo.employeeBasic;
 import com.project.pojo.pageBean;
 import com.project.vo.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -13,7 +12,7 @@ public interface employeeBasicService {
 
     employee_Basic findByToken(String employeeId);
 
-    void employeePasswordChange(String employeeId);
+    void employeePasswordReset(String employeeId);
 
     //void employeeBasicUpdate(employeeBasic employeeBasic,String claim);
 
@@ -30,4 +29,10 @@ public interface employeeBasicService {
     void import_emp(List<add_employee> emplist);
 
     void add_Avatar(String url,String claim);
+
+    String getpassword(String claim);
+
+    void password_change(String newPassword, String claim);
+
+    void app_update(app_update_employee appUpdateEmployee, String claim);
 }

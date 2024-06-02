@@ -2,8 +2,8 @@
 <project version="4">
   <component name="WebServers">
     <option name="servers">
-      <webServer id="f3f57d9b-89f0-4288-a094-8967ff86e2ca" name="47.120.44.17">
-        <fileTransfer rootFolder="/www/emotion_master" accessType="SFTP" host="47.120.44.17" port="22" sshConfigId="3eba3b0a-3fc7-4ce9-806f-1b539b2e2374" sshConfig="root@47.120.44.17:22 password">
+      <webServer id="5f2c37a2-e515-4f69-a246-39ba3fb9fe6b" name="47.120.44.17">
+        <fileTransfer rootFolder="/www/emotion_master" accessType="SFTP" host="47.120.44.17" port="22" sshConfigId="7499fda1-a03f-4547-a9fc-5ec95eff4601" sshConfig="root@47.120.44.17:22 password">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>

@@ -26,4 +26,5 @@ public class Result<T> {
     {
         return new Result<>(50000,"操作失败", data);
     }
+
 }

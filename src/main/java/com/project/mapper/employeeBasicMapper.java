@@ -1,10 +1,7 @@
 package com.project.mapper;
 
 import com.project.pojo.employeeBasic;
-import com.project.vo.add_employee;
-import com.project.vo.employee;
-import com.project.vo.employee_Basic;
-import com.project.vo.update_employee;
+import com.project.vo.*;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -21,7 +18,7 @@ public interface employeeBasicMapper {
     employee_Basic findByToken(String employeeId);
 
     @Update("update employeebasic set employeePassword=123456 where employeeId=#{employeeId}")
-    void employeePasswordChange(String employeeId);
+    void employeePasswordReset(String employeeId);
 /*
 
     @Update("update employeebasic set employeeName=#{employeeBasic.employeeName},employeePhoneNumber=#{employeeBasic.employeePhoneNumber},employeeAvatar=#{employeeBasic.employeeAvatar},employeeBirthday=#{employeeBasic.employeeBirthday} where employeeId=#{claim}")
@@ -50,4 +47,25 @@ public interface employeeBasicMapper {
 
     @Update("update employeebasic set employeeAvatar=#{url} where employeeId=#{claim}")
     void add_Avatar(String url,String claim);
+
+    @Select("select employeePassword from employeebasic where employeeId=#{claim}")
+    String getpassword(String claim);
+
+    @Update("update employeebasic set employeePassword=#{newPassword} where employeeId=#{claim}")
+    void change_password(String newPassword, String claim);
+
+    @Update("update employeebasic set employeeName=#{employeeName} where employeeId=#{claim}")
+    void app_update_empbasic_name(String employeeName, String claim);
+
+    @Update("update employeebasic set employeePhoneNumber=#{employeePhoneNumber} where employeeId=#{claim}")
+    void app_update_empbasic_phonenum(String employeePhoneNumber, String claim);
+
+    @Update("update employeebasic set employeeBirthday=#{employeeBirthday} where employeeId=#{claim}")
+    void app_update_empbasic_birthday(String employeeBirthday, String claim);
+
+    @Update("update employeejobinfo set employeeDepartmentNo=#{deptno} where employeeId=#{claim}")
+    void app_update_jobinfo_deptno(String deptno, String claim);
+
+    @Update("update employeejobinfo set employeeJob=#{employeeJob} where employeeId=#{claim}")
+    void app_update_jobinfo_empjob(String employeeJob, String claim);
 }

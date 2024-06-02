@@ -9,6 +9,11 @@ import java.util.List;
 
 @Mapper
 public interface departmentMapper {
+
+    @Select("select deptNo from department where deptName=#{deptname}")
+     String findByDeptName(String deptname);
+
+
     @Insert("insert into department(deptName, deptManagerId,higherDeptNo)" +
     "values (#{deptName}, #{deptManagerId},#{higherDeptNo})")
     void add(add_department department);
@@ -19,7 +24,7 @@ public interface departmentMapper {
     @Delete("delete from department where deptNo=#{deptNo}")
     void departmentDelete(Integer deptNo);
 
-    @Update("update department set  deptManagerId=#{deptManagerId} where deptNo=#{deptNo}")
+    @Update("update department set  deptName=#{deptName}, higherDeptNo=#{higherDeptNo},deptManagerId=#{deptManagerId} where deptNo=#{deptNo}")
     void departmentChange(department department);
 
     List<info_department> department_list(String departmentName, String phoneNumber, String manager);

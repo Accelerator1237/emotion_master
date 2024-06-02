@@ -6,12 +6,10 @@ import com.project.pojo.employeeBasic;
 import com.project.pojo.pageBean;
 import com.project.service.employeeBasicService;
 import com.project.mapper.employeeBasicMapper;
-import com.project.vo.add_employee;
-import com.project.vo.employee;
-import com.project.vo.employee_Basic;
-import com.project.vo.update_employee;
+import com.project.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.project.mapper.departmentMapper;
 
 import java.util.List;
 
@@ -19,6 +17,9 @@ import java.util.List;
 public class employeeBasicServiceImpl implements employeeBasicService {
     @Autowired(required = false)
     private employeeBasicMapper employeeBasicMapper;
+
+    @Autowired
+    private departmentMapper departmentMapper;
     @Override
     public void register(String employeeName, String employeePassword, String employeePhoneNumber, String employeeAvatar, String employeeBirthday, int employeeGender) {
         employeeBasicMapper.register(employeeName,employeePassword,employeePhoneNumber,employeeAvatar,employeeBirthday,employeeGender);
@@ -37,8 +38,8 @@ public class employeeBasicServiceImpl implements employeeBasicService {
     }
 
     @Override
-    public void employeePasswordChange(String employeeId) {
-        employeeBasicMapper.employeePasswordChange(employeeId);
+    public void employeePasswordReset(String employeeId) {
+        employeeBasicMapper.employeePasswordReset(employeeId);
     }
 
 /*
@@ -107,5 +108,33 @@ public class employeeBasicServiceImpl implements employeeBasicService {
     @Override
     public void add_Avatar(String url,String claim) {
         employeeBasicMapper.add_Avatar(url,claim);
+    }
+
+    @Override
+    public String getpassword(String claim) {
+      String password =  employeeBasicMapper.getpassword(claim);
+      return password;
+    }
+
+    @Override
+    public void password_change(String newPassword, String claim) {
+        employeeBasicMapper.change_password(newPassword,claim);
+    }
+
+    @Override
+    public void app_update(app_update_employee appUpdateEmployee, String claim) {
+        if(appUpdateEmployee.getEmployeeName()!=null)
+            employeeBasicMapper.app_update_empbasic_name(appUpdateEmployee.getEmployeeName(),claim);
+        if(appUpdateEmployee.getEmployeePhoneNumber()!=null)
+            employeeBasicMapper.app_update_empbasic_phonenum(appUpdateEmployee.getEmployeePhoneNumber(),claim);
+        if(appUpdateEmployee.getEmployeeBirthday()!=null)
+            employeeBasicMapper.app_update_empbasic_birthday(appUpdateEmployee.getEmployeeBirthday(),claim);
+        if(appUpdateEmployee.getDeptName()!=null) {
+            String deptname=appUpdateEmployee.getDeptName();
+            String deptno=departmentMapper.findByDeptName(deptname);
+            employeeBasicMapper.app_update_jobinfo_deptno(deptno, claim);
+        }
+        if(appUpdateEmployee.getEmployeeJob()!=null)
+            employeeBasicMapper.app_update_jobinfo_empjob(appUpdateEmployee.getEmployeeJob(),claim);
     }
 }

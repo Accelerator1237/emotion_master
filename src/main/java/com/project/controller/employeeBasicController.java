@@ -46,7 +46,13 @@ public class employeeBasicController {
         String regex="\\d{4}-\\d{2}-\\d{2}";
         Pattern pattern=Pattern.compile(regex);
         Matcher matcher=pattern.matcher(employee.getEmployeeBirthday());
-        employeeBasicService.employeeAdd(employee);
+
+        String phonenumber=employee.getEmployeePhoneNumber();
+        employeeBasic employee_basic=employeeBasicService.findByEmployeePhoneNumber(phonenumber);
+        if(employee_basic==null){
+            return Result.error("员工已存在（该电话号码重复）");
+        }
+
         if(employee.getEmployeeRole()==null){
             return Result.error("员工身份不能为空");
         }
@@ -59,7 +65,10 @@ public class employeeBasicController {
         else if(matcher.matches()){
             return Result.error("日期格式不合法");
         }
-        return Result.success();
+        else{
+            employeeBasicService.employeeAdd(employee);
+            return Result.success();
+        }
     }
 
     //通过员工的id查询员工的个人信息
@@ -99,9 +108,11 @@ public class employeeBasicController {
             claims.put("employeeRole",employeeJobInfo.getEmployeeRole());
             claims.put("employeeId",employeeBasic.getEmployeeId());
             String token= JwtUtil.genToken(claims);
-            token="token:"+token;
+            token Token = new token();
+            Token.setToken(token);
+//            token="token:"+token;
             //将生成的token包装返回给前端界面
-            return Result.success(token);
+            return Result.success(Token);
         }
     }
 
@@ -123,15 +134,15 @@ public class employeeBasicController {
     }
 
     //实现修改密码功能
-    @PostMapping("/change_password")
-    public Result employeePasswordChange(String employeeId){
+    @PostMapping("/reset_password")
+    public Result empPasswordReset(String employeeId){
     //通过查找相关员工id的员工信息，将新密码输入之后，直接修改密码为输入的新密码
         employeeBasic employeeBasic=employeeBasicService.findByEmployeeId(employeeId);
         if(employeeBasic==null){
             return Result.error("用户不存在");
         }
         else{
-            employeeBasicService.employeePasswordChange(employeeId);
+            employeeBasicService.employeePasswordReset(employeeId);
             return Result.success();
         }
     }
@@ -198,10 +209,26 @@ public class employeeBasicController {
         }
     }
 
+    @PostMapping("/app_update_employee")
+    public Result AppemployeeUpdate(@RequestHeader ("Authorization") String token,@RequestBody app_update_employee app_update_employee){
+        Map<String,Object> claims=JwtUtil.parseTokenToEmployeeId(token);
+        String claim= String.valueOf(claims.get("employeeId"));
+        employeeBasicService.app_update(app_update_employee,claim);
+        return Result.success();
+    }
+
     @PostMapping("/import_emp")
     public Result import_emp(MultipartFile file)throws IOException {
         ExcelReader reader= ExcelUtil.getReader(file.getInputStream());
         List<add_employee> emplist=reader.readAll(add_employee.class);
+        for (int i=0;i<emplist.size();i++){
+            add_employee addEmployee=emplist.get(i);
+            String phonenumber=addEmployee.getEmployeePhoneNumber();
+            employeeBasic employee_basic=employeeBasicService.findByEmployeePhoneNumber(phonenumber);
+            if(employee_basic!=null){
+                return Result.error("员工"+addEmployee.getEmployeeName()+"手机号重复");
+            }
+        }
         employeeBasicService.import_emp(emplist);
         return Result.success();
     }
@@ -214,6 +241,21 @@ public class employeeBasicController {
         employeeBasicService.add_Avatar(url,claim);
         return Result.success();
     }
+
+    @PutMapping("/change_password")
+    public Result password_change(@RequestHeader("Authorization") String token,String old_password,String new_password){
+        Map<String,Object> claims=JwtUtil.parseTokenToEmployeeId(token);
+        String claim= String.valueOf(claims.get("employeeId"));
+        String password= employeeBasicService.getpassword(claim);
+        if(!Objects.equals(old_password, password)){
+            return Result.error("原密码错误");
+        }
+        else{
+            employeeBasicService.password_change(new_password,claim);
+            return Result.success();
+        }
+    }
+
 
 
 }

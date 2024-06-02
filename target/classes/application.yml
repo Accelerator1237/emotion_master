@@ -4,12 +4,18 @@ spring:
     url: jdbc:mysql://47.120.44.17:3306/emotion_master
     username: root
     password: 20031024hjc
-    hikari:
-      max-lifetime: 5000000
+#    hikari:
+#      max-lifetime: 5000000
 
   servlet:
     multipart:
       max-file-size: 20MB
       max-request-size: 20MB
+alibaba:
+  cloud:
+    accessKeyId: ${ALIBABA_CLOUD_ACCESS_KEY_ID}
+    accessKeySecret: ${ALIBABA_CLOUD_ACCESS_KEY_SECRET}
+
+
 
 
