@@ -1,8 +1,6 @@
 package com.project.controller;
 
-import com.project.pojo.Result;
-import com.project.pojo.pageBean;
-import com.project.pojo.report;
+import com.project.pojo.*;
 import com.project.service.reportService;
 import com.project.untils.JwtUtil;
 import com.project.vo.emotion_report;
@@ -15,11 +13,25 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
+import java.io.IOException;
 
 //@CrossOrigin(origins = "*")
 // 声明这是一个 REST 控制器
@@ -27,6 +39,12 @@ import java.util.regex.Pattern;
 // 定义类请求路径
 @RequestMapping("/emotion")
 public class emotionController {
+
+    @Autowired(required = false)
+    private com.project.service.departmentService departmentService;
+
+    @Autowired
+    private com.project.service.employeeBasicService employeeBasicService;
 
     // 自动装配 reportService，如果没有匹配的bean，则不装配
     @Autowired(required = false)
@@ -36,12 +54,58 @@ public class emotionController {
 //        this.reportService = emotionDetectionService;
 //    }
 
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    // 人脸对比方法
+    private boolean compareFace(MultipartFile image, String encoding) throws IOException {
+        String url = "http://8.134.248.200:5001/recognize";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        Resource resource = new ByteArrayResource(image.getBytes()) {
+            @Override
+            public String getFilename() {
+                return image.getOriginalFilename();
+            }
+        };
+        body.add("file", resource);
+        body.add("encoding", encoding);
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+        ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Map.class);
+
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            return Boolean.parseBoolean(response.getBody().get("match").toString());
+        } else {
+            return false;
+        }
+    }
+
+
     // 处理 POST 请求，用于上传图片并检测表情
     @PostMapping("/detect")
     public Result<report> uploadAndDetect(@RequestHeader("Authorization") String token,
                                           @RequestParam("image") MultipartFile image) {
         try {
-            // 调用 service 层的方法来进行表情检测
+            // 解析Token获取employeeId
+            Map<String, Object> claims = JwtUtil.parseTokenToEmployeeId(token);
+            String employeeId = String.valueOf(claims.get("employeeId"));
+
+            // 从数据库获取用户的avatarEncoding
+            String avatarEncoding = employeeBasicService.getAvatarEncoding(employeeId);
+            if (avatarEncoding == null) {
+                return Result.error("用户没有保存的头像编码");
+            }
+
+            // 调用人脸对比微服务
+            boolean isFaceMatch = compareFace(image, avatarEncoding);
+            if (!isFaceMatch) {
+                return Result.error("人脸比对不成功");
+            }
+
+            // 调用情绪识别微服务
             String resultString = reportService.detectEmotion(image);
             System.out.println(resultString);
 
@@ -222,6 +286,7 @@ public class emotionController {
             report.setWarningType(maxKey);
             report.setSuggestion(suggestion);
 
+            System.out.println(1);
 ////            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 ////            String currentDate = dateFormat.format(new Date());
 //            LocalDate currentDate = LocalDate.now();
@@ -231,13 +296,13 @@ public class emotionController {
             String formattedDate = formatter.format(date);
             report.setRecordTime(formattedDate);
 
-            Map<String,Object> claims= JwtUtil.parseTokenToEmployeeId(token);
-            String claim= String.valueOf(claims.get("employeeId"));
-            report.setEmployeeId(claim);
+            report.setEmployeeId(employeeId);
+            System.out.println(6);
 
 
             // 存储报告
             reportService.addReport(report);
+            System.out.println(7);
 //            System.out.println(response);
             // 返回成功结果
             return Result.success(report);
@@ -259,4 +324,43 @@ public class emotionController {
         }
         return Result.error("pageNum为空 or pageSize为空");
     }
+
+
+
+    @GetMapping("/statistics")
+    private Result<data_center> Data(){
+
+        data_center data = new data_center();
+
+        data = reportService.calculateEmotionStatistics();
+
+        //当日时间
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = new Date();
+        String formattedDate = formatter.format(date);
+        //当日检查的人数
+        data.setInspectedNum(reportService.count_num(formattedDate));
+
+
+        return Result.success(data);
+
+    }
+
+//获取部门情绪情况
+    @GetMapping("/statistics_dept")
+    private Result<deptEmotion> GetDeptEmotion(@RequestParam("deptNo") int deptNo)
+    {
+        if(departmentService.findByDepartNo(deptNo) == null)
+        {
+            return Result.error("部门不存在");
+        }
+        else{
+            deptEmotion deptEmotion = reportService.getDeptEmotion(deptNo);
+            return Result.success(deptEmotion);
+        }
+
+    }
+
+//    @PostMapping("")
+
 }

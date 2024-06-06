@@ -35,4 +35,8 @@ public interface employeeBasicService {
     void password_change(String newPassword, String claim);
 
     void app_update(app_update_employee appUpdateEmployee, String claim);
+
+    void add_AvatarAndEncoding(String url, String encoding, String employeeId);
+
+    String getAvatarEncoding(String employeeId);
 }

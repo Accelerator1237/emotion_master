@@ -30,7 +30,8 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(loginInterceptor).excludePathPatterns("/employeeBasic/login","/employeeBasic/register","/employeeJobInfo/empJob_add","/employeeBasic/change_password");
 
         // 根据返回的token中的员工身份，对于非部门主管的人，不允许访问部门管理界面
-        registry.addInterceptor(queryInterceptor).addPathPatterns("/department/**","/employeeBasic/**","/employeeJobInfo/**").excludePathPatterns("/employeeBasic/login","/employeeJobInfo/empJob_info","/employeeBasic/info","/employeeBasic/employeeBasic_update");
+        registry.addInterceptor(queryInterceptor).addPathPatterns("/department/**","/employeeBasic/**","/employeeJobInfo/**").excludePathPatterns(
+                "/employeeBasic/login","/employeeJobInfo/empJob_info","/employeeBasic/info","/employeeBasic/employeeBasic_update","/employee/info_bytoken");
 
         // registry.addInterceptor(empInterceptor).excludePathPatterns("/department/*");
         // registry.addInterceptor(empInterceptor).excludePathPatterns("/employeeBasic/info_bytoken","/employeeBasic/login","");

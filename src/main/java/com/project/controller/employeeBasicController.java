@@ -10,7 +10,9 @@ import com.project.untils.JwtUtil;
 import com.project.untils.UploadUtil;
 import com.project.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -20,6 +22,19 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
+import java.io.IOException;
+import java.util.Map;
 
 @RestController
 //@CrossOrigin(origins = "*")
@@ -233,14 +248,64 @@ public class employeeBasicController {
         return Result.success();
     }
 
+//    @PostMapping("/upload_Avatar")
+//    public Result upload_Avatar(@RequestHeader("Authorization") String token,MultipartFile file)throws IOException{
+//        String url= UploadUtil.uploadImage(file);
+//        Map<String,Object> claims= JwtUtil.parseTokenToEmployeeId(token);
+//        String claim= String.valueOf(claims.get("employeeId"));
+//        employeeBasicService.add_Avatar(url,claim);
+//        return Result.success();
+//    }
+
     @PostMapping("/upload_Avatar")
-    public Result upload_Avatar(@RequestHeader("Authorization") String token,MultipartFile file)throws IOException{
-        String url= UploadUtil.uploadImage(file);
-        Map<String,Object> claims= JwtUtil.parseTokenToEmployeeId(token);
-        String claim= String.valueOf(claims.get("employeeId"));
-        employeeBasicService.add_Avatar(url,claim);
-        return Result.success();
+    public ResponseEntity<Result> upload_Avatar(@RequestHeader("Authorization") String token, @RequestParam("file") MultipartFile file) throws IOException {
+        // 上传图片到存储服务器，获取图片URL
+        String url = UploadUtil.uploadImage(file);
+
+        // 解析Token获取employeeId
+        Map<String, Object> claims = JwtUtil.parseTokenToEmployeeId(token);
+        String employeeId = String.valueOf(claims.get("employeeId"));
+
+        // 调用微服务进行人脸编码
+        String encodingUrl = "http://8.134.248.200:5001/encode";
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("file", file.getResource());
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(encodingUrl, HttpMethod.POST, requestEntity, Map.class);
+
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null && response.getBody().containsKey("encoding")) {
+                String encoding = response.getBody().get("encoding").toString();
+                // 将头像URL和编码结果保存到数据库
+                employeeBasicService.add_AvatarAndEncoding(url, encoding, employeeId);
+                return ResponseEntity.ok(Result.success());
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Result.error("请上传含有正面完整人脸的图片"));
+            }
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Result.error("请上传含有正面完整人脸的图片"));
+            } else if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
+                String errorMessage = e.getResponseBodyAsString();
+                if (errorMessage.contains("No face found")) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Result.error("请上传含有正面完整人脸的图片"));
+                } else {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Result.error(errorMessage));
+                }
+            } else {
+                return ResponseEntity.status(e.getStatusCode()).body(Result.error(e.getMessage()));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Result.error("An unexpected error occurred: " + e.getMessage()));
+        }
     }
+
 
     @PutMapping("/change_password")
     public Result password_change(@RequestHeader("Authorization") String token,String old_password,String new_password){
