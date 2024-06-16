@@ -22,16 +22,20 @@
 <!--        from employeebasic-->
 <!--        )b on a.deptManagerId=b.employeeId-->
 
-        SELECT d.deptName, eb.employeePhoneNumber, eb.employeeName, d.deptNo, peopleNum
-        FROM department d
-        LEFT JOIN (
-        SELECT employeeDepartmentNo, COUNT(eb.employeeId) AS peopleNum
-        FROM employeejobinfo ef
-        LEFT JOIN employeebasic eb ON ef.employeeId = eb.employeeId
-        GROUP BY employeeDepartmentNo
-        ) AS dept_employee_count ON d.deptNo = dept_employee_count.employeeDepartmentNo
-        LEFT JOIN employeejobinfo ef ON d.deptNo = ef.employeeDepartmentNo
-        LEFT JOIN employeebasic eb ON ef.employeeId = eb.employeeId
+--         SELECT d.deptName, eb.employeePhoneNumber, eb.employeeName, d.deptNo, peopleNum
+--         FROM department d
+--         LEFT JOIN (
+--         SELECT employeeDepartmentNo, COUNT(eb.employeeId) AS peopleNum
+--         FROM employeejobinfo ef
+--         LEFT JOIN employeebasic eb ON ef.employeeId = eb.employeeId
+--         GROUP BY employeeDepartmentNo
+--         ) AS dept_employee_count ON d.deptNo = dept_employee_count.employeeDepartmentNo
+--         LEFT JOIN employeejobinfo ef ON d.deptNo = ef.employeeDepartmentNo
+--         LEFT JOIN employeebasic eb ON ef.employeeId = eb.employeeId
+        SELECT d.deptName, e.employeePhoneNumber, e.employeeName, d.deptNo, peopleNum
+          FROM department as d
+          LEFT JOIN employeeBasic as e on d.deptManagerId = e.employeeId
+          LEFT JOIN (select distinct(deptNo), count(*) as peopleNum from employee_dept group by deptNo) as n ON d.deptNo = n.deptNo
         <where>
             <if test="departmentName!=null">
                 deptName=#{departmentName}
