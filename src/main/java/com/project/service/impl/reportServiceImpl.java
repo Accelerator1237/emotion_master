@@ -2,7 +2,10 @@ package com.project.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.project.mapper.departmentMapper;
 import com.project.mapper.emotionMapper;
+import com.project.pojo.data_center;
+import com.project.pojo.deptEmotion;
 import com.project.pojo.pageBean;
 import com.project.pojo.report;
 import com.project.service.reportService;
@@ -22,6 +25,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 // 表明这是一个服务组件
 @Service
@@ -36,6 +42,7 @@ public class reportServiceImpl implements reportService {
     // 自动装配 emotionMapper，用于数据库操作，若无对应bean则不装配
     @Autowired(required = false)
     private emotionMapper emotionMapper;
+
 
     // 实现 reportService 接口的 detectEmotion 方法
     @Override
@@ -88,4 +95,92 @@ public class reportServiceImpl implements reportService {
 
         return emotionReportpageBean;
     }
+
+    @Override
+    public Integer count_num(String formattedDate) {
+        return emotionMapper.countNum(formattedDate);
+    }
+
+
+
+    private data_center statistics(List<report> reports) {
+        data_center stats = new data_center();
+        Pattern pattern = Pattern.compile("(\\w+)=(\\d+\\.\\d+)");
+
+        for (report report : reports) {
+            String emotionData = report.getEmotionData();
+            Matcher matcher = pattern.matcher(emotionData);
+            double maxEmotionValue = -1;
+            String maxEmotion = "";
+
+            while (matcher.find()) {
+                String emotion = matcher.group(1);
+                double value = Double.parseDouble(matcher.group(2));
+
+                if (value > maxEmotionValue) {
+                    maxEmotionValue = value;
+                    maxEmotion = emotion;
+                }
+            }
+
+            switch (maxEmotion) {
+                case "anger":
+                    stats.setAnger(stats.getAnger() + 1);
+                    break;
+                case "contempt":
+                    stats.setContempt(stats.getContempt() + 1);
+                    break;
+                case "disgust":
+                    stats.setDisgust(stats.getDisgust() + 1);
+                    break;
+                case "fear":
+                    stats.setFear(stats.getFear() + 1);
+                    break;
+                case "happy":
+                    stats.setHappy(stats.getHappy() + 1);
+                    break;
+                case "neutral":
+                    stats.setNeutral(stats.getNeutral() + 1);
+                    break;
+                case "sad":
+                    stats.setSad(stats.getSad() + 1);
+                    break;
+                case "surprise":
+                    stats.setSurprise(stats.getSurprise() + 1);
+                    break;
+                default:
+                    break;
+            }
+        }
+        return stats;
+    }
+
+    @Override
+    public data_center calculateEmotionStatistics() {
+        //获取最新的报告
+        List<report> reports = emotionMapper.findLatestReports();
+        //方法statistics,计算每种情绪
+        return statistics(reports);
+
+    }
+
+
+    @Override
+    public deptEmotion getDeptEmotion(int deptNo) {
+        List<report> reports = emotionMapper.findLatestReportsBydeptNo(deptNo);
+
+        // 获取部门名称
+        String departmentName = emotionMapper.findDepartmentNameByDeptNo(deptNo);
+
+        data_center stats = statistics(reports);
+
+        deptEmotion deptEmotion = new deptEmotion();
+
+        deptEmotion.setDeptName(departmentName);
+        deptEmotion.setData_center(stats);
+
+        return deptEmotion;
+    }
+
+
 }

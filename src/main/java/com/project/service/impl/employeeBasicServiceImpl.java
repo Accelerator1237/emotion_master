@@ -137,4 +137,14 @@ public class employeeBasicServiceImpl implements employeeBasicService {
         if(appUpdateEmployee.getEmployeeJob()!=null)
             employeeBasicMapper.app_update_jobinfo_empjob(appUpdateEmployee.getEmployeeJob(),claim);
     }
+
+    @Override
+    public void add_AvatarAndEncoding(String url, String encoding, String employeeId) {
+        employeeBasicMapper.add_AvatarAndEncoding(url, encoding, employeeId);
+    }
+
+    @Override
+    public String getAvatarEncoding(String employeeId) {
+        return employeeBasicMapper.getAvatarEncoding(employeeId);
+    }
 }

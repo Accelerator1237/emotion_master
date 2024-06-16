@@ -2,6 +2,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://47.120.44.17:3306/emotion_master
+#    url: jdbc:mysql://localhost:3306/emotion_master
     username: root
     password: 20031024hjc
 #    hikari:

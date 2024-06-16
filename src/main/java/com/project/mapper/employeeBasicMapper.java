@@ -68,4 +68,10 @@ public interface employeeBasicMapper {
 
     @Update("update employeejobinfo set employeeJob=#{employeeJob} where employeeId=#{claim}")
     void app_update_jobinfo_empjob(String employeeJob, String claim);
+
+    @Update("UPDATE employeebasic SET employeeAvatar = #{url}, avatarEncoding = #{encoding} WHERE employeeId = #{employeeId}")
+    void add_AvatarAndEncoding(String url, String encoding, String employeeId);
+
+    @Select("SELECT avatarEncoding FROM employeebasic WHERE employeeId = #{employeeId}")
+    String getAvatarEncoding(String employeeId);
 }
