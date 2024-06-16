@@ -21,6 +21,9 @@ public class departmentServiceImpl implements departmentService {
     @Override
     public void add(add_department department){
         departmentMapper.add(department);
+        String deptNo = departmentMapper.findDeptNo(department.getDeptName(), department.getDeptManagerId());
+        departmentMapper.deleteEmpJobInfo(department.getDeptManagerId());
+        departmentMapper.addEmpJobInfo(department.getDeptManagerId(), deptNo);
     }
 
     @Override

@@ -27,6 +27,15 @@ public interface departmentMapper {
     @Update("update department set  deptName=#{deptName}, higherDeptNo=#{higherDeptNo},deptManagerId=#{deptManagerId} where deptNo=#{deptNo}")
     void departmentChange(department department);
 
+    @Insert("insert into employeejobinfo(employeeId, employeeDepartmentNo) VALUES (#{employeeId}, #{deptNo})")
+    void addEmpJobInfo(String employeeId, String deptNo);
+
+    @Delete("delete from employeejobinfo where employeeId = #{employeeId}")
+    void deleteEmpJobInfo(String employeeId);
+
+    @Select("select deptNo from department where deptName = #{deptName} AND deptManagerId = #{deptManagerId}")
+    String findDeptNo(String deptName, String deptManagerId);
+
     List<info_department> department_list(String departmentName, String phoneNumber, String manager);
 
 //    int count(String departmentName);

@@ -6,39 +6,38 @@
 
     <select id="list" resultType="com.project.vo.employee">
         select
-            employeeName,
-            employeeId,
-
-            employeePhoneNumber,
-            employeeAvatar,
-            employeeBirthday,
-            employeeGender,
-            deptNo,
-            deptName
-            from employee_dept
+        employeeName,
+        employeeId,
+        employeePhoneNumber,
+        employeeAvatar,
+        employeeBirthday,
+        employeeGender,
+        deptNo,
+        deptName
+        from employee_dept
         <where>
             <if test="role!=null">
-               employeeRole=#{role}
+                AND employeeRole=#{role}
             </if>
 
             <if test="name!=null">
-                and employeeName LIKE CONCAT('%',#{name},'%')
+                AND employeeName LIKE CONCAT('%',#{name},'%')
             </if>
 
             <if test="phoneNumber!=null">
-                and employeePhoneNumber=#{phoneNumber}
+                AND employeePhoneNumber=#{phoneNumber}
             </if>
 
             <if test="gender!=null">
-                and employeeGender=#{gender}
+                AND employeeGender=#{gender}
             </if>
 
             <if test="departmentNo!=null">
-                and  deptNo=#{departmentNo}
+                AND deptNo=#{departmentNo}
             </if>
 
             <if test="beginBirthday != null and endBirthday != null">
-                and employeeBirthday between #{beginBirthday} AND #{endBirthday}
+                AND employeeBirthday between #{beginBirthday} AND #{endBirthday}
             </if>
 
         </where>
