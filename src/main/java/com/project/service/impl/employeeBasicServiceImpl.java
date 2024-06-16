@@ -51,6 +51,7 @@ public class employeeBasicServiceImpl implements employeeBasicService {
 
     @Override
     public void employeeDelete(String employeeId) {
+        employeeBasicMapper.app_delete_jobinfo_empjob(employeeId);
         employeeBasicMapper.employeeDelete(employeeId);
     }
 

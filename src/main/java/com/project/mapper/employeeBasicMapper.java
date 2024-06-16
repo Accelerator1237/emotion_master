@@ -69,6 +69,9 @@ public interface employeeBasicMapper {
     @Update("update employeejobinfo set employeeJob=#{employeeJob} where employeeId=#{claim}")
     void app_update_jobinfo_empjob(String employeeJob, String claim);
 
+    @Delete("delete from employeejobinfo where employeeId=#{employeeId}")
+    void app_delete_jobinfo_empjob(String employeeId);
+
     @Update("UPDATE employeebasic SET employeeAvatar = #{url}, avatarEncoding = #{encoding} WHERE employeeId = #{employeeId}")
     void add_AvatarAndEncoding(String url, String encoding, String employeeId);
 
