@@ -51,36 +51,32 @@ public class employeeBasicController {
 
     //注册账号，需要员工的姓名，账号密码，手机号码，生日以及性别等即可，同时这也是实现录入员工信息功能的一环，部门可以通过上传员工信息，并且统一密码为123456来进行录入员工信息
     @PutMapping("/register")
-    public Result register(String employeeName,String employeePassword,String employeePhoneNumber,String employeeAvatar,String employeeBirthday,int employeeGender){
-        employeeBasicService.register(employeeName,employeePassword,employeePhoneNumber,employeeAvatar,employeeBirthday,employeeGender);
+    public Result register(String employeeName, String employeePassword, String employeePhoneNumber, String employeeAvatar, String employeeBirthday, int employeeGender) {
+        employeeBasicService.register(employeeName, employeePassword, employeePhoneNumber, employeeAvatar, employeeBirthday, employeeGender);
         return Result.success();
     }
 
     @PutMapping("/add")
-    public Result employeeAdd(@RequestBody add_employee employee){
-        String regex="\\d{4}-\\d{2}-\\d{2}";
-        Pattern pattern=Pattern.compile(regex);
-        Matcher matcher=pattern.matcher(employee.getEmployeeBirthday());
+    public Result employeeAdd(@RequestBody add_employee employee) {
+        String regex = "\\d{4}-\\d{2}-\\d{2}";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(employee.getEmployeeBirthday());
 
-        String phonenumber=employee.getEmployeePhoneNumber();
-        employeeBasic employee_basic=employeeBasicService.findByEmployeePhoneNumber(phonenumber);
-        if(employee_basic==null){
+        String phonenumber = employee.getEmployeePhoneNumber();
+        employeeBasic employee_basic = employeeBasicService.findByEmployeePhoneNumber(phonenumber);
+        if (employee_basic != null) {
             return Result.error("员工已存在（该电话号码重复）");
         }
 
-        if(employee.getEmployeeRole()==null){
+        if (employee.getEmployeeRole() == null) {
             return Result.error("员工身份不能为空");
-        }
-        else if(employee.getEmployeeJob()==null){
+        } else if (employee.getEmployeeJob() == null) {
             return Result.error("员工职位不能为空");
-        }
-        else if(employee.getEmployeeGender()>2){
+        } else if (employee.getEmployeeGender() > 2) {
             return Result.error("员工性别不合法");
-        }
-        else if(matcher.matches()){
+        } else if (!matcher.matches()) {
             return Result.error("日期格式不合法");
-        }
-        else{
+        } else {
             employeeBasicService.employeeAdd(employee);
             return Result.success();
         }
@@ -88,41 +84,41 @@ public class employeeBasicController {
 
     //通过员工的id查询员工的个人信息
     @GetMapping("/info")
-    public Result<employeeBasic> employeeBasicInfo(String employeeId){
+    public Result<employeeBasic> employeeBasicInfo(String employeeId) {
         //调用service层的函数，通过employeeId来查找得到员工的信息保存到员工基础信息类当中
-        employeeBasic employeeBasic=employeeBasicService.findByEmployeeId(employeeId);
+        employeeBasic employeeBasic = employeeBasicService.findByEmployeeId(employeeId);
         //如果找到的员工基础信息类结果为空，则找不到该用户
-        if(employeeBasic==null){
+        if (employeeBasic == null) {
             return Result.error("用户不存在");
         }
         //不为空则返回员工的所有基础信息
-        else{
+        else {
             return Result.success(employeeBasic);
         }
     }
 
     //通过输入员工手机号码和密码进行登录操作
     @PostMapping("/login")
-    public Result employeeLogin(@RequestBody emp_login empLogin){
-        employeeBasic employeeBasic=employeeBasicService.findByEmployeePhoneNumber(empLogin.getEmployeePhoneNumber());
+    public Result employeeLogin(@RequestBody emp_login empLogin) {
+        employeeBasic employeeBasic = employeeBasicService.findByEmployeePhoneNumber(empLogin.getEmployeePhoneNumber());
 
         //如果查询得到的员工类为空，则用户不存在
-        if(employeeBasic==null){
+        if (employeeBasic == null) {
             return Result.error("用户不存在");
         }
         //如果查询到的员工类的账号或者密码不匹配，则输出账号或密码不正确
-        else if(!Objects.equals(empLogin.getEmployeePhoneNumber(), employeeBasic.getEmployeePhoneNumber()) || !Objects.equals(empLogin.getEmployeePassword(), employeeBasic.getEmployeePassword())){
+        else if (!Objects.equals(empLogin.getEmployeePhoneNumber(), employeeBasic.getEmployeePhoneNumber()) || !Objects.equals(empLogin.getEmployeePassword(), employeeBasic.getEmployeePassword())) {
             return Result.error("账号或密码不正确");
         }
         //账号密码都正确返回正确的结果
-        else{
-            String employeeId=employeeBasic.getEmployeeId();
-            employeeJobInfo employeeJobInfo=employeeJobInfoService.employeeJobFindById(employeeId);
+        else {
+            String employeeId = employeeBasic.getEmployeeId();
+            employeeJobInfo employeeJobInfo = employeeJobInfoService.employeeJobFindById(employeeId);
             //创建哈希表，保存token还有用户数据
-            Map<String,Object> claims=new HashMap<>();
-            claims.put("employeeRole",employeeJobInfo.getEmployeeRole());
-            claims.put("employeeId",employeeBasic.getEmployeeId());
-            String token= JwtUtil.genToken(claims);
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("employeeRole", employeeJobInfo.getEmployeeRole());
+            claims.put("employeeId", employeeBasic.getEmployeeId());
+            String token = JwtUtil.genToken(claims);
             token Token = new token();
             Token.setToken(token);
 //            token="token:"+token;
@@ -133,30 +129,29 @@ public class employeeBasicController {
 
     //实现分页查询功能，根据前端传过来的页数和最大数量，来实现对查询的数据的分页
     @GetMapping("/list")
-        public Result<pageBean<employee>> list(Integer pageNum,Integer pageSize,
-                                                    @RequestParam(required = false) String role,
-                                                    @RequestParam(required = false) String name,
-                                                    @RequestParam(required = false) String phoneNumber,
-                                                    @RequestParam(required = false) Integer gender,
-                                                    @RequestParam(required = false) Integer departmentNo,
-                                                    @RequestParam(required = false) String beginBirthday,
-                                                    @RequestParam(required = false) String endBirthday){
-        if(pageNum!=null && pageSize!=null){
-            pageBean<employee> employeeBasicpageBean=employeeBasicService.list(pageNum,pageSize,role,name,phoneNumber,gender,departmentNo,beginBirthday,endBirthday);
-            return  Result.success(employeeBasicpageBean);
+    public Result<pageBean<employee>> list(Integer pageNum, Integer pageSize,
+                                           @RequestParam(required = false) String role,
+                                           @RequestParam(required = false) String name,
+                                           @RequestParam(required = false) String phoneNumber,
+                                           @RequestParam(required = false) Integer gender,
+                                           @RequestParam(required = false) Integer departmentNo,
+                                           @RequestParam(required = false) String beginBirthday,
+                                           @RequestParam(required = false) String endBirthday) {
+        if (pageNum != null && pageSize != null) {
+            pageBean<employee> employeeBasicpageBean = employeeBasicService.list(pageNum, pageSize, role, name, phoneNumber, gender, departmentNo, beginBirthday, endBirthday);
+            return Result.success(employeeBasicpageBean);
         }
         return Result.error("pageNum为空");
     }
 
     //实现修改密码功能
     @PostMapping("/reset_password")
-    public Result empPasswordReset(String employeeId){
-    //通过查找相关员工id的员工信息，将新密码输入之后，直接修改密码为输入的新密码
-        employeeBasic employeeBasic=employeeBasicService.findByEmployeeId(employeeId);
-        if(employeeBasic==null){
+    public Result empPasswordReset(String employeeId) {
+        //通过查找相关员工id的员工信息，将新密码输入之后，直接修改密码为输入的新密码
+        employeeBasic employeeBasic = employeeBasicService.findByEmployeeId(employeeId);
+        if (employeeBasic == null) {
             return Result.error("用户不存在");
-        }
-        else{
+        } else {
             employeeBasicService.employeePasswordReset(employeeId);
             return Result.success();
         }
@@ -179,40 +174,35 @@ public class employeeBasicController {
 
     //根据前端上传的token数据，解析token并且返回token中有关用户id的信息
     @GetMapping("/info_bytoken")
-    public Result<employee_Basic> employeeBasicInfoByToken(@RequestHeader("Authorization") String token){
-        Map<String,Object> claims=JwtUtil.parseTokenToEmployeeId(token);
-        String claim= String.valueOf(claims.get("employeeId"));
-        employee_Basic employee_Basic=employeeBasicService.findByToken(claim);
+    public Result<employee_Basic> employeeBasicInfoByToken(@RequestHeader("Authorization") String token) {
+        Map<String, Object> claims = JwtUtil.parseTokenToEmployeeId(token);
+        String claim = String.valueOf(claims.get("employeeId"));
+        employee_Basic employee_Basic = employeeBasicService.findByToken(claim);
         return Result.success(employee_Basic);
     }
 
     @DeleteMapping("/delete_employee")
-    public Result employeeDelete(String employeeId){
-        employeeBasic employeeBasic=employeeBasicService.findByEmployeeId(employeeId);
-        if(employeeBasic==null){
+    public Result employeeDelete(String employeeId) {
+        employeeBasic employeeBasic = employeeBasicService.findByEmployeeId(employeeId);
+        if (employeeBasic == null) {
             return Result.error("用户不存在");
-        }
-        else{
+        } else {
             employeeBasicService.employeeDelete(employeeId);
             return Result.success();
         }
     }
 
     @PostMapping("/update_employee")
-    public Result employeeUpdate(@RequestBody update_employee updateEmployee)
-    {
+    public Result employeeUpdate(@RequestBody update_employee updateEmployee) {
         employeeBasic employeeBasic = employeeBasicService.findByEmployeeId(updateEmployee.getEmployeeId());
-        department department=departmentService.findByDepartNo(updateEmployee.getEmployeeDepartmentNo());
-        if(employeeBasic == null){
+        department department = departmentService.findByDepartNo(updateEmployee.getEmployeeDepartmentNo());
+        if (employeeBasic == null) {
             return Result.error("用户不存在");
-        }
-        else if(department==null){
+        } else if (department == null) {
             return Result.error("部门不存在");
-        }
-        else if(updateEmployee.getEmployeeRole()==null) {
+        } else if (updateEmployee.getEmployeeRole() == null) {
             return Result.error("员工身份不能为空");
-        }
-        else if(updateEmployee.getEmployeeJob()==null){
+        } else if (updateEmployee.getEmployeeJob() == null) {
             return Result.error("员工职位不能为空");
         }
 //        else if(!Objects.equals(updateEmployee.getEmployeeId(), employeeBasic.getEmployeeId())){
@@ -225,23 +215,23 @@ public class employeeBasicController {
     }
 
     @PostMapping("/app_update_employee")
-    public Result AppemployeeUpdate(@RequestHeader ("Authorization") String token,@RequestBody app_update_employee app_update_employee){
-        Map<String,Object> claims=JwtUtil.parseTokenToEmployeeId(token);
-        String claim= String.valueOf(claims.get("employeeId"));
-        employeeBasicService.app_update(app_update_employee,claim);
+    public Result AppemployeeUpdate(@RequestHeader("Authorization") String token, @RequestBody app_update_employee app_update_employee) {
+        Map<String, Object> claims = JwtUtil.parseTokenToEmployeeId(token);
+        String claim = String.valueOf(claims.get("employeeId"));
+        employeeBasicService.app_update(app_update_employee, claim);
         return Result.success();
     }
 
     @PostMapping("/import_emp")
-    public Result import_emp(MultipartFile file)throws IOException {
-        ExcelReader reader= ExcelUtil.getReader(file.getInputStream());
-        List<add_employee> emplist=reader.readAll(add_employee.class);
-        for (int i=0;i<emplist.size();i++){
-            add_employee addEmployee=emplist.get(i);
-            String phonenumber=addEmployee.getEmployeePhoneNumber();
-            employeeBasic employee_basic=employeeBasicService.findByEmployeePhoneNumber(phonenumber);
-            if(employee_basic!=null){
-                return Result.error("员工"+addEmployee.getEmployeeName()+"手机号重复");
+    public Result import_emp(MultipartFile file) throws IOException {
+        ExcelReader reader = ExcelUtil.getReader(file.getInputStream());
+        List<add_employee> emplist = reader.readAll(add_employee.class);
+        for (int i = 0; i < emplist.size(); i++) {
+            add_employee addEmployee = emplist.get(i);
+            String phonenumber = addEmployee.getEmployeePhoneNumber();
+            employeeBasic employee_basic = employeeBasicService.findByEmployeePhoneNumber(phonenumber);
+            if (employee_basic != null) {
+                return Result.error("员工" + addEmployee.getEmployeeName() + "手机号重复");
             }
         }
         employeeBasicService.import_emp(emplist);
@@ -306,17 +296,15 @@ public class employeeBasicController {
         }
     }
 
-
     @PutMapping("/change_password")
-    public Result password_change(@RequestHeader("Authorization") String token,String old_password,String new_password){
-        Map<String,Object> claims=JwtUtil.parseTokenToEmployeeId(token);
-        String claim= String.valueOf(claims.get("employeeId"));
-        String password= employeeBasicService.getpassword(claim);
-        if(!Objects.equals(old_password, password)){
+    public Result password_change(@RequestHeader("Authorization") String token, String old_password, String new_password) {
+        Map<String, Object> claims = JwtUtil.parseTokenToEmployeeId(token);
+        String claim = String.valueOf(claims.get("employeeId"));
+        String password = employeeBasicService.getpassword(claim);
+        if (!Objects.equals(old_password, password)) {
             return Result.error("原密码错误");
-        }
-        else{
-            employeeBasicService.password_change(new_password,claim);
+        } else {
+            employeeBasicService.password_change(new_password, claim);
             return Result.success();
         }
     }
