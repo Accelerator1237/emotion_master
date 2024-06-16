@@ -36,7 +36,7 @@ public interface departmentMapper {
     @Select("select deptNo from department where deptName = #{deptName} AND deptManagerId = #{deptManagerId}")
     String findDeptNo(String deptName, String deptManagerId);
 
-    List<info_department> department_list(String departmentName, String phoneNumber, String manager);
+    List<info_department> department_list(String departmentNo, String phoneNumber, String manager);
 
 //    int count(String departmentName);
 }

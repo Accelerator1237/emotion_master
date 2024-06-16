@@ -37,8 +37,8 @@
           LEFT JOIN employeeBasic as e on d.deptManagerId = e.employeeId
           LEFT JOIN (select distinct(deptNo), count(*) as peopleNum from employee_dept group by deptNo) as n ON d.deptNo = n.deptNo
         <where>
-            <if test="departmentName!=null">
-                deptName=#{departmentName}
+            <if test="departmentNo!=null">
+                d.deptNo=#{departmentNo}
             </if>
 
             <if test="phoneNumber!=null">

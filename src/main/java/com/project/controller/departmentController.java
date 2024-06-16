@@ -85,11 +85,11 @@ public class departmentController {
 
     @GetMapping("list")
     public Result<pageBean<info_department>> list(Integer pageNum,Integer pageSize,
-                                            @RequestParam(required = false) String departmentName,
+                                            @RequestParam(required = false) String departmentNo,
                                             @RequestParam(required = false) String phoneNumber,
                                             @RequestParam(required = false) String manager){
         if(pageNum != null && pageSize != null){
-            pageBean<info_department> departmentpageBean = departmentService.department_list(pageNum,pageSize,departmentName,phoneNumber,manager);
+            pageBean<info_department> departmentpageBean = departmentService.department_list(pageNum,pageSize,departmentNo,phoneNumber,manager);
             return Result.success(departmentpageBean);
         }
         return Result.error("pageNum为空");

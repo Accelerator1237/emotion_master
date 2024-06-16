@@ -42,7 +42,7 @@ public class departmentServiceImpl implements departmentService {
     }
 
     @Override
-    public pageBean<info_department> department_list(Integer pageNum, Integer pageSize, String departmentName, String phoneNumber, String manager) {
+    public pageBean<info_department> department_list(Integer pageNum, Integer pageSize, String departmentNo, String phoneNumber, String manager) {
 
 //        int num;
 //        num = departmentMapper.count(departmentName);//怎么注入进item，数量在SQL里没问题
@@ -51,7 +51,7 @@ public class departmentServiceImpl implements departmentService {
 
         PageHelper.startPage(pageNum,pageSize);
 
-        List<info_department> departments = departmentMapper.department_list(departmentName, phoneNumber, manager);
+        List<info_department> departments = departmentMapper.department_list(departmentNo, phoneNumber, manager);
 
 
         Page<info_department> p=(Page<info_department>) departments;

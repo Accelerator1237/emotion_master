@@ -14,5 +14,5 @@ public interface departmentService {
 
     void departmentChange(department department);
 
-    pageBean<info_department> department_list(Integer pageNum, Integer pageSize, String departmentName, String phoneNumber, String manager);
+    pageBean<info_department> department_list(Integer pageNum, Integer pageSize, String departmentNo, String phoneNumber, String manager);
 }
