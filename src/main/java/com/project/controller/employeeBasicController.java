@@ -146,13 +146,13 @@ public class employeeBasicController {
 
     //实现修改密码功能
     @PostMapping("/reset_password")
-    public Result empPasswordReset(String employeeId) {
+    public Result empPasswordReset(@RequestBody resetPassword rp) {
         //通过查找相关员工id的员工信息，将新密码输入之后，直接修改密码为输入的新密码
-        employeeBasic employeeBasic = employeeBasicService.findByEmployeeId(employeeId);
+        employeeBasic employeeBasic = employeeBasicService.findByEmployeeId(rp.getEmployeeId());
         if (employeeBasic == null) {
             return Result.error("用户不存在");
         } else {
-            employeeBasicService.employeePasswordReset(employeeId);
+            employeeBasicService.employeePasswordReset(rp.getEmployeeId());
             return Result.success();
         }
     }
